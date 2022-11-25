@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
-const port = process.env.PORT || 7000
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { json } = require('express');
+const port = process.env.PORT || 5000
 const app = express()
 require("dotenv").config()
 
@@ -17,7 +18,29 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run() {
 
     try {
+        const productsColection = client.db("carmax").collection("products")
+        const categoriesColection = client.db("carmax").collection("categories")
 
+        app.get("/categories", async (req, res) => {
+            const query = {}
+            const categories = await categoriesColection.find(query).toArray()
+            res.send(categories)
+        })
+
+        app.get("/category/:Category", async (req, res) => {
+            const category = req.params.Category
+            const query = {
+                Category: category
+            }
+            const products = await productsColection.find(query).toArray()
+            res.send(products)
+        })
+
+        app.get("/products", async (req, res) => {
+            const query = {}
+            const products = await productsColection.find(query).toArray()
+            res.send(products)
+        })
     }
     finally {
 
