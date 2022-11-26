@@ -20,6 +20,7 @@ async function run() {
     try {
         const productsColection = client.db("carmax").collection("products")
         const categoriesColection = client.db("carmax").collection("categories")
+        const bookingsCollection = client.db("carmax").collection("bookings")
 
         app.get("/categories", async (req, res) => {
             const query = {}
@@ -29,17 +30,22 @@ async function run() {
 
         app.get("/category/:Category", async (req, res) => {
             const category = req.params.Category
-            const query = {
-                Category: category
-            }
+            const query = {}
             const products = await productsColection.find(query).toArray()
-            res.send(products)
+            const remainingProducts = products.filter(product => product.Category === category)
+            res.send(remainingProducts)
         })
 
         app.get("/products", async (req, res) => {
             const query = {}
             const products = await productsColection.find(query).toArray()
             res.send(products)
+        })
+
+        app.post('/bookings', async (req, res) => {
+            const booking = req.body;
+            const result = await bookingsCollection.insertOne(booking)
+            res.send(result)
         })
     }
     finally {
