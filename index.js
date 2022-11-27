@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const { json } = require('express');
+const { json, query } = require('express');
 const port = process.env.PORT || 5000
 const app = express()
 require("dotenv").config()
@@ -12,7 +12,7 @@ app.use(express.json())
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.farjvzi.mongodb.net/?retryWrites=true&w=majority`;
-console.log(uri)
+// console.log(uri)
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 async function run() {
@@ -84,6 +84,16 @@ async function run() {
             const products = await productsColection.find(query).toArray()
             const myProduct = products.filter(product => product.sellerNmae === name)
             res.send(myProduct)
+        })
+
+        app.get("/users/seller", async (req, res) => {
+            const role = req.query.role;
+            // console.log(role)
+            const query = {
+                role: role
+            }
+            const sellers = await usersCollection.find(query).toArray()
+            res.send(sellers)
         })
 
     }
