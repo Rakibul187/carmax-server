@@ -21,6 +21,7 @@ async function run() {
         const productsColection = client.db("carmax").collection("products")
         const categoriesColection = client.db("carmax").collection("categories")
         const bookingsCollection = client.db("carmax").collection("bookings")
+        const usersCollection = client.db("carmax").collection("users")
 
         app.get("/categories", async (req, res) => {
             const query = {}
@@ -57,6 +58,13 @@ async function run() {
             const result = await bookingsCollection.insertOne(booking)
             res.send(result)
         })
+
+        app.post('/users', async (req, res) => {
+            const users = req.body;
+            const result = await usersCollection.insertOne(users)
+            res.send(result)
+        })
+
     }
     finally {
 
