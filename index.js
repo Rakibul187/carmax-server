@@ -59,10 +59,31 @@ async function run() {
             res.send(result)
         })
 
+        app.get("/users", async (req, res) => {
+            const query = {}
+            const users = await usersCollection.find(query).toArray()
+            // const exceptAdmin = users.map(user => user.role !== "admin")
+            res.send(users)
+        })
+
         app.post('/users', async (req, res) => {
             const users = req.body;
             const result = await usersCollection.insertOne(users)
             res.send(result)
+        })
+
+        app.post('/addproduct', async (req, res) => {
+            const product = req.body;
+            const result = await productsColection.insertOne(product)
+            res.send(result)
+        })
+
+        app.get("/dashboard/myproducts", async (req, res) => {
+            const name = req.query.name
+            const query = {}
+            const products = await productsColection.find(query).toArray()
+            const myProduct = products.filter(product => product.sellerNmae === name)
+            res.send(myProduct)
         })
 
     }
