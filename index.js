@@ -43,6 +43,16 @@ async function run() {
             res.send(products)
         })
 
+
+        app.delete("/product/:id", async (req, res) => {
+            const id = req.params.id
+            const query = {
+                _id: ObjectId(id)
+            }
+            const result = await productsColection.deleteOne(query)
+            res.send(result)
+        })
+
         app.get('/bookings', async (req, res) => {
             const email = req.query.email;
             const query = {
@@ -51,6 +61,8 @@ async function run() {
             const bookings = await bookingsCollection.find(query).toArray()
             res.send(bookings)
         })
+
+
 
 
         app.post('/bookings', async (req, res) => {
@@ -62,8 +74,22 @@ async function run() {
         app.get("/users", async (req, res) => {
             const query = {}
             const users = await usersCollection.find(query).toArray()
+            const exceptAdmin = users.filter(user => user.role !== "admin")
+            res.send(exceptAdmin)
+        })
+        app.get("/users/role", async (req, res) => {
+            const query = {}
+            const users = await usersCollection.find(query).toArray()
             // const exceptAdmin = users.map(user => user.role !== "admin")
             res.send(users)
+        })
+        app.delete("/users/:id", async (req, res) => {
+            const id = req.params.id
+            const query = {
+                _id: ObjectId(id)
+            }
+            const result = await usersCollection.deleteOne(query)
+            res.send(result)
         })
 
         app.post('/users', async (req, res) => {
