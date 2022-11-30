@@ -5,6 +5,8 @@ const { json, query } = require('express');
 const port = process.env.PORT || 5000
 const app = express()
 require("dotenv").config()
+const stripe = require("stripe")(process.env.STRIPE_SECRET);
+
 
 // midleware
 app.use(cors())
@@ -63,12 +65,37 @@ async function run() {
         })
 
 
-
-
         app.post('/bookings', async (req, res) => {
             const booking = req.body;
             const result = await bookingsCollection.insertOne(booking)
             res.send(result)
+        })
+
+        app.get('/bookings/:id', async (req, res) => {
+            const id = req.params.id
+            console.log(id)
+            const query = {
+                _id: ObjectId(id)
+            }
+            const booking = await bookingsCollection.findOne(query);
+            res.send(booking)
+        })
+
+        app.post('/create-payment-intent', async (req, res) => {
+            const booking = req.body
+            console.log(booking)
+            const price = booking.resellPrice
+            const amount = price * 100
+            const paymentIntent = await stripe.paymentIntents.create({
+                currency: "usd",
+                amount: amount,
+                "payment_method_types": [
+                    "card"
+                ]
+            });
+            res.send({
+                clientSecret: paymentIntent.client_secret
+            })
         })
 
         app.get("/users", async (req, res) => {
@@ -77,12 +104,46 @@ async function run() {
             const exceptAdmin = users.filter(user => user.role !== "admin")
             res.send(exceptAdmin)
         })
-        app.get("/users/role", async (req, res) => {
-            const query = {}
-            const users = await usersCollection.find(query).toArray()
-            // const exceptAdmin = users.map(user => user.role !== "admin")
-            res.send(users)
+
+
+        app.get('/users/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email }
+            const user = await usersCollection.findOne(query);
+            res.send({ isAdmin: user?.role === 'admin' });
         })
+
+        app.get('/users/seller/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email }
+            const user = await usersCollection.findOne(query);
+            res.send({ isSeller: user?.role === 'Seller' });
+        })
+
+        app.delete("/users/seller/:id", async (req, res) => {
+            const id = req.params.id
+            const query = {
+                _id: ObjectId(id)
+            }
+            const result = await usersCollection.deleteOne(query)
+            res.send(result)
+        })
+
+        app.put("/users/seller/verification/:id", async (req, res) => {
+            const id = req.params.id
+            const filter = {
+                _id: ObjectId(id)
+            }
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: {
+                    isVerified: true
+                }
+            }
+            const result = await usersCollection.updateOne(filter, updatedDoc, options)
+            res.send(result)
+        })
+
         app.delete("/users/:id", async (req, res) => {
             const id = req.params.id
             const query = {
