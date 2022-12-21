@@ -8,7 +8,7 @@ require("dotenv").config()
 const stripe = require("stripe")(process.env.STRIPE_SECRET);
 
 
-// midleware
+// midlewaare
 app.use(cors())
 app.use(express.json())
 
